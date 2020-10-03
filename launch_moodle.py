@@ -1,8 +1,18 @@
 from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import getpass
+import sys
 
 username = 'cs5190419'
 password = getpass.getpass()
+course_code = False
+if(len(sys.argv) > 1):
+    course_code = sys.argv[1].upper()
+    # print(course_code)
+    if(len(course_code) != 6 or not course_code[:3].isalpha() or not course_code[3:].isnumeric()):
+        course_code = False
 
 driver = webdriver.Chrome("chromedriver")
 driver.get("https://moodle.iitd.ac.in/login/index.php")
@@ -42,9 +52,46 @@ def login(username, password):
     password_field.send_keys(password)
     captcha_field.send_keys(str(sol))
 
+    print("Logging in as: cs5190419")
     login_btn.click()
 
 
+def navigate(course_code):
+    FOUND = False
+    curr_page = 0
+    page_div = driver.find_element_by_id("pb-for-in-progress")
+    total_pages = int(page_div.get_attribute("data-page-count"))
+    while(curr_page < total_pages and not FOUND):
+        curr_page += 1
+        try:
+            course_link = WebDriverWait(driver, 2).until(
+                EC.presence_of_element_located(
+                    (By.PARTIAL_LINK_TEXT, course_code))
+            )
+            course_link.click()
+            FOUND = True
+            print("Found! Opening course page.")
+        except:
+            if(curr_page != total_pages):
+                next_page = driver.find_element_by_link_text(str(curr_page+1))
+                next_page.click()
+
+    if(not FOUND):
+        print("Error404: " + course_code + " Not Found!")
+        if(total_pages > 1):
+            driver.find_element_by_link_text('1').click()
+            print("Redirecting back to page 1..")
+
+
 login(username, password)
+assert 'Dashboard' in driver.title
+print("Logged in successfully..")
+print("-------------------------")
+
+if(course_code):
+    print("Searching for " + course_code)
+    navigate(course_code)
+else:
+    "Invalid Course Code Format!"
 
 # driver.quit()
