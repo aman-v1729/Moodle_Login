@@ -5,20 +5,8 @@ from selenium.webdriver.support import expected_conditions as EC
 import getpass
 import sys
 
-username = 'cs5190419'
-password = getpass.getpass()
-course_code = False
-if(len(sys.argv) > 1):
-    course_code = sys.argv[1].upper()
-    # print(course_code)
-    if(len(course_code) != 6 or not course_code[:3].isalpha() or not course_code[3:].isnumeric()):
-        course_code = False
 
-driver = webdriver.Chrome("chromedriver")
-driver.get("https://moodle.iitd.ac.in/login/index.php")
-
-
-def login(username, password):
+def login(driver, username, password):
     username_field = driver.find_element_by_id("username")
     password_field = driver.find_element_by_id("password")
     captcha_field = driver.find_element_by_id("valuepkg3")
@@ -56,7 +44,7 @@ def login(username, password):
     login_btn.click()
 
 
-def navigate(course_code):
+def navigate(driver, course_code):
     FOUND = False
     curr_page = 0
     page_div = driver.find_element_by_id("pb-for-in-progress")
@@ -83,15 +71,29 @@ def navigate(course_code):
             print("Redirecting back to page 1..")
 
 
-login(username, password)
-assert 'Dashboard' in driver.title
-print("Logged in successfully..")
-print("-------------------------")
+if __name__ == '__main__':
+    username = 'cs5190419'
+    print(f'Username: {username}')
+    password = getpass.getpass()
+    course_code = False
+    if(len(sys.argv) > 1):
+        course_code = sys.argv[1].upper()
+        # print(course_code)
+        if(len(course_code) != 6 or not course_code[:3].isalpha() or not course_code[3:].isnumeric()):
+            course_code = False
+    options = webdriver.ChromeOptions()
 
-if(course_code):
-    print("Searching for " + course_code)
-    navigate(course_code)
-else:
-    "Invalid Course Code Format!"
+    driver = webdriver.Chrome(options=options)
+    driver.get("https://moodle.iitd.ac.in/login/index.php")
 
-# driver.quit()
+    login(driver, username, password)
+    assert 'Dashboard' in driver.title
+    print('Logged in successfully..')
+    print('-------------------------')
+
+    if(course_code):
+        print('Searching for ' + course_code)
+        navigate(driver, course_code)
+    else:
+        'Invalid Course Code Format!'
+    # driver.quit()
