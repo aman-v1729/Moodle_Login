@@ -13,7 +13,7 @@ Need to install:
 - Clone the repository and copy the **moodle** executable.
 	The executable can also be downloaded directly from [here](https://drive.google.com/drive/folders/1WtUfB2V3KpmspoVpKSMV-rRrzxhDeKx1?usp=sharing): 
 
-Move both files to **\usr\local\bin** using the terminal:
+Move both files to **/usr/local/bin** using the terminal:
 ```bash
 mv path/to/executable /usr/local/bin
 ```
