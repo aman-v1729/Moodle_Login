@@ -4,6 +4,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import getpass
 import sys
+import os
 
 
 def login(driver, username, password):
@@ -40,7 +41,7 @@ def login(driver, username, password):
     password_field.send_keys(password)
     captcha_field.send_keys(str(sol))
 
-    print("Logging in as: cs5190419")
+    print(f'Logging in as: {username}')
     login_btn.click()
 
 
@@ -71,19 +72,40 @@ def navigate(driver, course_code):
             print("Redirecting back to page 1..")
 
 
-if __name__ == '__main__':
-    username = 'cs5190419'
-    print(f'Username: {username}')
-    password = getpass.getpass()
+if __name__ == '__main__': 
+    try:
+        username = os.environ['KERBEROS_ID']
+        print(f'Retrieved username: {username}')
+    except:
+        username = input('Username: ')
+    try: 
+        password = os.environ['KERBEROS_PASS']
+        print('Retrieved password from env.')
+    except:
+        password = getpass.getpass()
+    os.system('/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome &')
+
     course_code = False
+    
+    # Define capabilities
+    caps = webdriver.DesiredCapabilities.CHROME.copy()
+
+    # Set chrome options
+    chrome_options = webdriver.ChromeOptions() 
+    chrome_options.add_experimental_option("excludeSwitches", ['enable-automation']);
+    
+    
     if(len(sys.argv) > 1):
         course_code = sys.argv[1].upper()
         # print(course_code)
         if(len(course_code) != 6 or not course_code[:3].isalpha() or not course_code[3:].isnumeric()):
             course_code = False
-    options = webdriver.ChromeOptions()
-
-    driver = webdriver.Chrome(options=options)
+        if(sys.argv[1].upper() == 'VPL'):
+            course_code = 'COL106'
+            # WARNING: Accepts insecure certificates to run VPL
+            caps['acceptInsecureCerts'] = True 
+        
+    driver = webdriver.Chrome(options=chrome_options, desired_capabilities = caps);  
     driver.get("https://moodle.iitd.ac.in/login/index.php")
 
     login(driver, username, password)
